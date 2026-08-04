@@ -1,0 +1,24 @@
+#include <stdio.h>
+
+int main() {
+    int i, j;
+
+    printf("DIGITAL CLOCK PATTERN\n\n");
+
+    for(i = 0; i < 7; i++) {
+        for(j = 0; j < 5; j++) {
+            if(i == 0 || i == 3 || i == 6 || j == 0 || j == 4)
+                printf("* ");
+            else
+                printf("  ");
+        }
+
+        printf("   ");
+
+        if(i == 2 || i == 4)
+            printf("*");
+        printf("\n");
+    }
+
+    return 0;
+}
