@@ -1,0 +1,17 @@
+#include <stdio.h>
+
+int main() {
+    float num1, num2, num3, average;
+
+    // Ask the user for input
+    printf("Enter three numbers separated by spaces: ");
+    scanf("%f %f %f", &num1, &num2, &num3);
+
+    // Calculate the average
+    average = (num1 + num2 + num3) / 3.0;
+
+    // Display the result
+    printf("The average is: %.2f\n", average);
+
+    return 0;
+}
