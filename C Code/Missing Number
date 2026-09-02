@@ -1,0 +1,14 @@
+int missingNumber(int* nums, int numsSize) {
+    // Step 1: Calculate the expected sum of numbers from 0 to n using Gauss Formula
+    // n is represented by numsSize here
+    int expectedSum = (numsSize * (numsSize + 1)) / 2;
+    
+    // Step 2: Compute the actual sum of the elements present in the array
+    int actualSum = 0;
+    for (int i = 0; i < numsSize; i++) {
+        actualSum += nums[i];
+    }
+    
+    // Step 3: The difference between them yields the missing number
+    return expectedSum - actualSum;
+}
