@@ -1,0 +1,93 @@
+#include <stdlib.h>
+
+// Structure to group a project's profit and capital constraints together
+typedef struct {
+    int profit;
+    int capital;
+} Project;
+
+// Comparison function for sorting projects by capital ascending
+int compareProjects(const void* a, const void* b) {
+    return (((Project*)a)->capital - ((Project*)b)->capital);
+}
+
+// Max-Heap data structure to prioritize maximum pure profits
+typedef struct {
+    int* data;
+    int size;
+} MaxHeap;
+
+void maxHeapPush(MaxHeap* heap, int val) {
+    int i = heap->size++;
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (heap->data[p] >= val) break;
+        heap->data[i] = heap->data[p];
+        i = p;
+    }
+    heap->data[i] = val;
+}
+
+int maxHeapPop(MaxHeap* heap) {
+    if (heap->size == 0) return -1;
+    int res = heap->data[0];
+    int val = heap->data[--heap->size];
+    int i = 0;
+    while (i * 2 + 1 < heap->size) {
+        int left = i * 2 + 1;
+        int right = left + 1;
+        int target = left;
+        if (right < heap->size && heap->data[right] > heap->data[left]) {
+            target = right;
+        }
+        if (val >= heap->data[target]) break;
+        heap->data[i] = heap->data[target];
+        i = target;
+    }
+    heap->data[i] = val;
+    return res;
+}
+
+int findMaximizedCapital(int k, int w, int* profits, int profitsSize, int* capital, int capitalSize) {
+    int n = profitsSize;
+    Project* list = (Project*)malloc(n * sizeof(Project));
+    
+    // Step 1: Pack details into our structural array pairs
+    for (int i = 0; i < n; i++) {
+        list[i].profit = profits[i];
+        list[i].capital = capital[i];
+    }
+    
+    // Step 2: Sort the projects by capital ascending
+    qsort(list, n, sizeof(Project), compareProjects);
+
+    // Initialize the Max-Heap workspace
+    MaxHeap heap;
+    heap.data = (int*)malloc(n * sizeof(int));
+    heap.size = 0;
+
+    int projectIdx = 0;
+
+    // Step 3: Run k greedy project selections
+    for (int i = 0; i < k; i++) {
+        // Push all projects we can currently afford into the Max-Heap
+        while (projectIdx < n && list[projectIdx].capital <= w) {
+            maxHeapPush(&heap, list[projectIdx].profit);
+            projectIdx++;
+        }
+
+        // If the heap is empty, we can't afford any more new projects
+        if (heap.size == 0) {
+            break;
+        }
+
+        // Pick the project with the highest pure profit
+        w += maxHeapPop(&heap);
+    }
+
+    // Free all dynamic arrays safely
+    free(list);
+    free(heap.data);
+
+    return w;
+}
