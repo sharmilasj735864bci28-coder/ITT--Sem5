@@ -1,0 +1,52 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <stdbool.h>
+
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int findMinDifference(char** timePoints, int timePointsSize) {
+    // Pigeonhole Principle: There are only 1440 minutes in a 24-hour day.
+    // If we have more than 1440 time points, a duplicate is guaranteed.
+    if (timePointsSize > 1440) {
+        return 0;
+    }
+
+    // A boolean bucket array representing every minute of the day
+    bool minutesSeen[1440] = {false};
+
+    // Step 1: Parse string timestamps into total elapsed minutes from 00:00
+    for (int i = 0; i < timePointsSize; i++) {
+        int hours, mins;
+        sscanf(timePoints[i], "%d:%d", &hours, &mins);
+        int totalMinutes = hours * 60 + mins;
+
+        // If we have already seen this exact minute value, the minimum difference is 0
+        if (minutesSeen[totalMinutes]) {
+            return 0;
+        }
+        minutesSeen[totalMinutes] = true;
+    }
+
+    // Step 2: Traverse the bucket line sequentially to compute adjacent gaps
+    int minDiff = 1440; 
+    int firstTime = -1;
+    int prevTime = -1;
+
+    for (int i = 0; i < 1440; i++) {
+        if (minutesSeen[i]) {
+            if (firstTime == -1) {
+                firstTime = i; // Save the absolute first time seen for the circular wrap
+            } else {
+                minDiff = MIN(minDiff, i - prevTime);
+            }
+            prevTime = i;
+        }
+    }
+
+    // Step 3: Handle the circular midnight wrapping threshold gap
+    // Distance between the last time of the day and the first time of the next day
+    int wrapAroundDiff = (1440 - prevTime) + firstTime;
+    minDiff = MIN(minDiff, wrapAroundDiff);
+
+    return minDiff;
+}
