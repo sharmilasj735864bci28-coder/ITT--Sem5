@@ -1,0 +1,50 @@
+#include <stdlib.h>
+
+// Custom comparison function for qsort
+int compareEnvelopes(const void* a, const void* b) {
+    int* envA = *(int**)a;
+    int* envB = *(int**)b;
+    
+    // If widths are different, sort by width ascending
+    if (envA[0] != envB[0]) {
+        return envA[0] - envB[0];
+    }
+    // If widths are identical, sort by height descending
+    return envB[1] - envA[1];
+}
+
+int maxEnvelopes(int** envelopes, int envelopesSize, int* envelopesColSize) {
+    if (envelopesSize == 0) return 0;
+
+    // Step 1: Sort the envelopes using our custom combination rule
+    qsort(envelopes, envelopesSize, sizeof(int*), compareEnvelopes);
+
+    // Step 2: Find the Longest Increasing Subsequence (LIS) on the heights
+    // tails array will store the smallest tail of all increasing subsequences found so far
+    int* tails = (int*)malloc(envelopesSize * sizeof(int));
+    int len = 0;
+
+    for (int i = 0; i < envelopesSize; i++) {
+        int height = envelopes[i][1];
+
+        // Binary search to find the correct insertion position for 'height' in tails
+        int left = 0, right = len;
+        while (left < right) {
+            int mid = left + (right - left) / 2;
+            if (tails[mid] < height) {
+                left = mid + 1;
+            } else {
+                right = mid;
+            }
+        }
+
+        // Overwrite or append the element
+        tails[left] = height;
+        if (left == len) {
+            len++;
+        }
+    }
+
+    free(tails);
+    return len;
+}
