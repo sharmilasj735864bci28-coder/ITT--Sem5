@@ -1,0 +1,121 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+// Hash map node to store dictionary words
+typedef struct Node {
+    char* word;
+    struct Node* next;
+} Node;
+
+#define HASH_SIZE 10007
+
+unsigned int getHash(const char* str) {
+    unsigned int hash = 5381;
+    int c;
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash % HASH_SIZE;
+}
+
+// Insert a word into the hash map dictionary
+void insertWord(Node** hashTable, const char* word) {
+    unsigned int idx = getHash(word);
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->word = strdup(word);
+    newNode->next = hashTable[idx];
+    hashTable[idx] = newNode;
+}
+
+// Search if a word segment exists inside our dictionary hash table
+bool searchWord(Node** hashTable, const char* word, int start, int end) {
+    if (start > end) return false;
+    
+    // Temporarily extract the substring slice
+    int len = end - start + 1;
+    char* temp = (char*)malloc((len + 1) * sizeof(char));
+    strncpy(temp, word + start, len);
+    temp[len] = '\0';
+    
+    unsigned int idx = getHash(temp);
+    Node* curr = hashTable[idx];
+    bool found = false;
+    
+    while (curr != NULL) {
+        if (strcmp(curr->word, temp) == 0) {
+            found = true;
+            break;
+        }
+        curr = curr->next;
+    }
+    
+    free(temp);
+    return found;
+}
+
+// Custom sort comparison: Sorts words based on length in ascending order
+int compareWords(const void* a, const void* b) {
+    return strlen(*(const char**)a) - strlen(*(const char**)b);
+}
+
+// Check if a word can be formed entirely of smaller dictionary entries via 1D DP
+bool isConcatenated(const char* word, Node** hashTable) {
+    int len = strlen(word);
+    if (len == 0) return false;
+
+    // dp[i] will be true if the substring word[0...i-1] can be segmented completely
+    bool* dp = (bool*)calloc(len + 1, sizeof(bool));
+    dp[0] = true; // Base Case: Empty prefix string segment
+
+    for (int i = 1; i <= len; i++) {
+        for (int j = 0; j < i; j++) {
+            if (dp[j] && searchWord(hashTable, word, j, i - 1)) {
+                dp[i] = true;
+                break; // Strategy optimization found, jump to next outer step
+            }
+        }
+    }
+
+    bool finalResult = dp[len];
+    free(dp);
+    return finalResult;
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char** findAllConcatenatedWordsInADict(char** words, int wordsSize, int* returnSize) {
+    // Step 1: Sort the string elements primarily by length
+    qsort(words, wordsSize, sizeof(char*), compareWords);
+
+    // Step 2: Initialize our hash table memory space configuration registers
+    Node** hashTable = (Node**)calloc(HASH_SIZE, sizeof(Node*));
+
+    char** result = (char**)malloc(wordsSize * sizeof(char*));
+    *returnSize = 0;
+
+    // Step 3: Run the sequential pass tracking combinations sequentially
+    for (int i = 0; i < wordsSize; i++) {
+        if (isConcatenated(words[i], hashTable)) {
+            result[(*returnSize)++] = strdup(words[i]);
+        } else {
+            // Only add to dictionary if it CANNOT be formed by existing shorter words
+            insertWord(hashTable, words[i]);
+        }
+    }
+
+    // Free all dynamic hash map node frames safely
+    for (int i = 0; i < HASH_SIZE; i++) {
+        Node* curr = hashTable[i];
+        while (curr != NULL) {
+            Node* tmp = curr;
+            curr = curr->next;
+            free(tmp->word);
+            free(tmp);
+        }
+    }
+    free(hashTable);
+
+    return result;
+}
