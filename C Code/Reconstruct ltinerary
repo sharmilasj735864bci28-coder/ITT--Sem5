@@ -1,0 +1,112 @@
+#include <stdlib.h>
+#include <string.h>
+
+// Comparison function to sort tickets lexicographically by destination
+int compareTickets(const void* a, const void* b) {
+    char** ticketA = *(char***)a;
+    char** ticketB = *(char***)b;
+    int cmpFrom = strcmp(ticketA[0], ticketB[0]);
+    if (cmpFrom != 0) return cmpFrom;
+    return strcmp(ticketA[1], ticketB[1]);
+}
+
+// Structure to track which tickets have been used
+typedef struct {
+    char* to;
+    int used;
+} Flight;
+
+// Airport structure representing an adjacency list
+typedef struct {
+    char from[4];
+    Flight* arrivals;
+    int count;
+} Airport;
+
+// Helper function to find or insert an airport into our map array
+int getAirportIndex(Airport* graph, int* graphSize, char* code) {
+    for (int i = 0; i < *graphSize; i++) {
+        if (strcmp(graph[i].from, code) == 0) {
+            return i;
+        }
+    }
+    strcpy(graph[*graphSize].from, code);
+    graph[*graphSize].arrivals = NULL;
+    graph[*graphSize].count = 0;
+    return (*graphSize)++;
+}
+
+// Hierholzer DFS traversal worker
+void dfs(Airport* graph, int graphSize, int airportIdx, char** result, int* resIdx) {
+    Airport* airport = &graph[airportIdx];
+    
+    // Visit all lexicographically sorted destinations sequentially
+    for (int i = 0; i < airport->count; i++) {
+        if (!airport->arrivals[i].used) {
+            airport->arrivals[i].used = 1; // Mark edge as used
+            
+            // Find the index of the arrival airport in our graph
+            int nextAirportIdx = -1;
+            for (int j = 0; j < graphSize; j++) {
+                if (strcmp(graph[j].from, airport->arrivals[i].to) == 0) {
+                    nextAirportIdx = j;
+                    break;
+                }
+            }
+            
+            if (nextAirportIdx != -1) {
+                dfs(graph, graphSize, nextAirportIdx, result, resIdx);
+            }
+        }
+    }
+    
+    // Write back the airport code once stuck (Post-order traversal assignment)
+    result[*resIdx] = (char*)malloc(4 * sizeof(char));
+    strcpy(result[(*resIdx)--], airport->from);
+}
+
+char** findItinerary(char*** tickets, int ticketsSize, int* ticketsColSize, int* returnSize) {
+    // Step 1: Sort tickets alphabetically based on departure, then arrival
+    qsort(tickets, ticketsSize, sizeof(char**), compareTickets);
+
+    // Step 2: Build the Adjacency List Graph
+    Airport* graph = (Airport*)malloc(2 * ticketsSize * sizeof(Airport));
+    int graphSize = 0;
+
+    for (int i = 0; i < ticketsSize; i++) {
+        int idx = getAirportIndex(graph, &graphSize, tickets[i][0]);
+        graph[idx].arrivals = (Flight*)realloc(graph[idx].arrivals, (graph[idx].count + 1) * sizeof(Flight));
+        graph[idx].arrivals[graph[idx].count].to = tickets[i][1];
+        graph[idx].arrivals[graph[idx].count].used = 0;
+        graph[idx].count++;
+        
+        // Ensure arrival airport is registered in the graph even if it has no outbound flights
+        getAirportIndex(graph, &graphSize, tickets[i][1]);
+    }
+
+    // Step 3: Run Hierholzer's Algorithm starting from "JFK"
+    int totalNodes = ticketsSize + 1;
+    char** result = (char**)malloc(totalNodes * sizeof(char*));
+    int resIdx = totalNodes - 1; // Fill backwards from the last spot
+
+    int startIdx = -1;
+    for (int i = 0; i < graphSize; i++) {
+        if (strcmp(graph[i].from, "JFK") == 0) {
+            startIdx = i;
+            break;
+        }
+    }
+
+    if (startIdx != -1) {
+        dfs(graph, graphSize, startIdx, result, &resIdx);
+    }
+
+    // Clean up graph structures
+    for (int i = 0; i < graphSize; i++) {
+        if (graph[i].arrivals) free(graph[i].arrivals);
+    }
+    free(graph);
+
+    *returnSize = totalNodes;
+    return result;
+}
