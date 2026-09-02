@@ -1,0 +1,26 @@
+#include <stdlib.h>
+#include <math.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findDuplicates(int* nums, int numsSize, int* returnSize) {
+    // In the worst case, half of the elements could be duplicates
+    int* result = (int*)malloc((numsSize / 2 + 1) * sizeof(int));
+    *returnSize = 0;
+
+    for (int i = 0; i < numsSize; i++) {
+        // Use the absolute value to get the true mapped index profile
+        int targetIdx = abs(nums[i]) - 1;
+
+        // If the value at targetIdx is negative, it's a duplicate!
+        if (nums[targetIdx] < 0) {
+            result[(*returnSize)++] = targetIdx + 1;
+        } else {
+            // Otherwise, mark it as visited by negating it
+            nums[targetIdx] = -nums[targetIdx];
+        }
+    }
+
+    return result;
+}
