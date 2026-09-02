@@ -1,0 +1,57 @@
+#include <stdlib.h>
+#include <string.h>
+
+// A structure to store a list of characters belonging to a specific frequency bucket
+typedef struct {
+    char* chars;
+    int count;
+    int capacity;
+} FrequencyBucket;
+
+char* frequencySort(char* s) {
+    int n = strlen(s);
+    if (n <= 1) return s;
+
+    // Step 1: Count occurrences of each character using a standard ASCII register array
+    int freq[256] = {0};
+    for (int i = 0; i < n; i++) {
+        freq[(unsigned char)s[i]]++;
+    }
+
+    // Step 2: Set up an array of buckets from index 0 up to n
+    FrequencyBucket* buckets = (FrequencyBucket*)calloc(n + 1, sizeof(FrequencyBucket));
+
+    // Step 3: Populate the frequency buckets
+    for (int i = 0; i < 256; i++) {
+        int f = freq[i];
+        if (f > 0) {
+            if (buckets[f].count == buckets[f].capacity) {
+                buckets[f].capacity = buckets[f].capacity == 0 ? 4 : buckets[f].capacity * 2;
+                buckets[f].chars = (char*)realloc(buckets[f].chars, buckets[f].capacity * sizeof(char));
+            }
+            buckets[f].chars[buckets[f].count++] = (char)i;
+        }
+    }
+
+    // Step 4: Traverse the buckets from right to left (highest frequency to lowest)
+    char* result = (char*)malloc((n + 1) * sizeof(char));
+    int resIdx = 0;
+
+    for (int f = n; f > 0; f--) {
+        if (buckets[f].count > 0) {
+            // For each character that shares the exact frequency 'f'
+            for (int i = 0; i < buckets[f].count; i++) {
+                char ch = buckets[f].chars[i];
+                // Append the character 'f' times consecutively into our result string
+                memset(result + resIdx, ch, f);
+                resIdx += f;
+            }
+            free(buckets[f].chars);
+        }
+    }
+    
+    result[resIdx] = '\0'; // Append string termination null terminator character
+    free(buckets);
+
+    return result;
+}
