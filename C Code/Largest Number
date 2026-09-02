@@ -1,0 +1,54 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+// Custom comparison function for qsort
+int compare(const void* a, const void* b) {
+    char ab[30];
+    char ba[30];
+    
+    // Create combined configurations string AB and BA
+    sprintf(ab, "%s%s", *(const char**)a, *(const char**)b);
+    sprintf(ba, "%s%s", *(const char**)b, *(const char**)a);
+    
+    // Sort descending based on combination evaluation
+    return strcmp(ba, ab);
+}
+
+char* largestNumber(int* nums, int numsSize) {
+    // Array to store string representations of each number
+    char** strNums = (char**)malloc(numsSize * sizeof(char*));
+    int totalLength = 0;
+    
+    for (int i = 0; i < numsSize; i++) {
+        strNums[i] = (char*)malloc(12 * sizeof(char));
+        sprintf(strNums[i], "%d", nums[i]);
+        totalLength += strlen(strNums[i]);
+    }
+    
+    // Step 1: Sort the string elements with our custom combination rule
+    qsort(strNums, numsSize, sizeof(char*), compare);
+    
+    // Edge Case: If the highest sorted number is "0", the whole number is 0
+    if (strcmp(strNums[0], "0") == 0) {
+        char* zeroResult = (char*)malloc(2 * sizeof(char));
+        strcpy(zeroResult, "0");
+        
+        // Free dynamic structures
+        for (int i = 0; i < numsSize; i++) free(strNums[i]);
+        free(strNums);
+        
+        return zeroResult;
+    }
+    
+    // Step 2: Combine sorted string nodes into the target result structure
+    char* result = (char*)malloc((totalLength + 1) * sizeof(char));
+    result[0] = '\0';
+    for (int i = 0; i < numsSize; i++) {
+        strcat(result, strNums[i]);
+        free(strNums[i]); // Clean individual element strings
+    }
+    free(strNums);
+    
+    return result;
+}
