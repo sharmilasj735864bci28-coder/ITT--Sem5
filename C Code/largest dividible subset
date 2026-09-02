@@ -1,0 +1,45 @@
+#include <stdlib.h>
+
+// Helper function to count how many elements are less than or equal to 'target'
+int countLessOrEqual(int** matrix, int n, int target) {
+    int count = 0;
+    int row = 0;
+    int col = n - 1;
+
+    // Start from the top-right corner of the sorted matrix
+    while (row < n && col >= 0) {
+        if (matrix[row][col] <= target) {
+            // If the element is <= target, then all elements to its left 
+            // in the current row are also <= target.
+            count += (col + 1);
+            row++; // Move down to the next row
+        } else {
+            col--; // Move left to search for smaller elements
+        }
+    }
+    return count;
+}
+
+int kthSmallest(int** matrix, int matrixSize, int* matrixColSize, int k) {
+    int n = matrixSize;
+    
+    // The search range limits are determined by the sorted layout constraints
+    int low = matrix[0][0];
+    int high = matrix[n - 1][n - 1];
+    int result = low;
+
+    // Run Binary Search across the numerical range limits
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        
+        // Count how many values across the grid match or fall below 'mid'
+        if (countLessOrEqual(matrix, n, mid) >= k) {
+            result = mid; // Record 'mid' as a potential candidate
+            high = mid - 1; // Try to find a smaller valid number
+        } else {
+            low = mid + 1; // Increase target value limits
+        }
+    }
+
+    return result;
+}
