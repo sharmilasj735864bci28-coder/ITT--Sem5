@@ -1,0 +1,20 @@
+char findTheDifference(char* s, char* t) {
+    char result = 0;
+    
+    // Step 1: XOR all characters in string s
+    int i = 0;
+    while (s[i] != '\0') {
+        result ^= s[i];
+        i++;
+    }
+    
+    // Step 2: XOR all characters in string t
+    int j = 0;
+    while (t[j] != '\0') {
+        result ^= t[j];
+        j++;
+    }
+    
+    // The cancelled residue holds the exact missing added character code
+    return result;
+}
