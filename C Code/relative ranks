@@ -1,0 +1,58 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+// Structure to pair an athlete's score with their initial index positioning
+typedef struct {
+    int score;
+    int index;
+} Athlete;
+
+// Custom comparison function for sorting athletes by score descending
+int compare(const void* a, const void* b) {
+    return (((Athlete*)b)->score - ((Athlete*)a)->score);
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+char** findRelativeRanks(int* score, int scoreSize, int* returnSize) {
+    *returnSize = scoreSize;
+    
+    // Allocate space for the final string array matrix rows
+    char** result = (char**)malloc(scoreSize * sizeof(char*));
+    
+    // Pair each raw score with its current index identity mapping profiles
+    Athlete* list = (Athlete*)malloc(scoreSize * sizeof(Athlete));
+    for (int i = 0; i < scoreSize; i++) {
+        list[i].score = score[i];
+        list[i].index = i;
+    }
+    
+    // Step 1: Sort the athletes descending based on raw performance value
+    qsort(list, scoreSize, sizeof(Athlete), compare);
+    
+    // Step 2: Assign specific placement text tokens using index targets
+    for (int i = 0; i < scoreSize; i++) {
+        int originalIdx = list[i].index;
+        
+        // Medals are always allocated for the top 3 highest scores
+        if (i == 0) {
+            result[originalIdx] = strdup("Gold Medal");
+        } else if (i == 1) {
+            result[originalIdx] = strdup("Silver Medal");
+        } else if (i == 2) {
+            result[originalIdx] = strdup("Bronze Medal");
+        } else {
+            // Rank positions from 4th place onwards are represented as simple numeric characters
+            char buffer[12];
+            sprintf(buffer, "%d", i + 1);
+            result[originalIdx] = strdup(buffer);
+        }
+    }
+    
+    // Free temporary tracking layout structs
+    free(list);
+    
+    return result;
+}
