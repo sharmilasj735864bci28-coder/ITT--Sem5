@@ -1,0 +1,68 @@
+#include <stdlib.h>
+
+// Array ah sort panna use aagura helper function
+int compare(const void *a, const void *b) {
+    long long va = *(int*)a;
+    long long vb = *(int*)b;
+    if (va < vb) return -1;
+    if (va > vb) return 1;
+    return 0;
+}
+
+int** fourSum(int* nums, int numsSize, int target, int* returnSize, int** returnColumnSizes) {
+    // 1. Array ah ascending order la sort panrom
+    qsort(nums, numsSize, sizeof(int), compare);
+    
+    int capacity = 16;
+    int** res = (int**)malloc(capacity * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(capacity * sizeof(int));
+    *returnSize = 0;
+    
+    // 2. Outer loops use panni first rendu number ah fix panrom
+    for (int i = 0; i < numsSize - 3; i++) {
+        if (i > 0 && nums[i] == nums[i - 1]) continue; // Duplicate ah skip panna
+        
+        for (int j = i + 1; j < numsSize - 2; j++) {
+            if (j > i + 1 && nums[j] == nums[j - 1]) continue; // Duplicate ah skip panna
+            
+            // 3. Two pointers use panni adutha rendu number ah kandupidikirom
+            int left = j + 1;
+            int right = numsSize - 1;
+            
+            while (left < right) {
+                // Integer overflow aagama iruka long long use panrom
+                long long current_sum = (long long)nums[i] + nums[j] + nums[left] + nums[right];
+                
+                if (current_sum == target) {
+                    // Result matrix dynamic memory allocation
+                    if (*returnSize >= capacity) {
+                        capacity *= 2;
+                        res = (int**)realloc(res, capacity * sizeof(int*));
+                        *returnColumnSizes = (int*)realloc(*returnColumnSizes, capacity * sizeof(int));
+                    }
+                    
+                    res[*returnSize] = (int*)malloc(4 * sizeof(int));
+                    res[*returnSize][0] = nums[i];
+                    res[*returnSize][1] = nums[j];
+                    res[*returnSize][2] = nums[left];
+                    res[*returnSize][3] = nums[right];
+                    (*returnColumnSizes)[*returnSize] = 4;
+                    (*returnSize)++;
+                    
+                    // Duplicate numbers ah left and right la thavirkka
+                    while (left < right && nums[left] == nums[left + 1]) left++;
+                    while (left < right && nums[right] == nums[right - 1]) right--;
+                    
+                    left++;
+                    right--;
+                } else if (current_sum < target) {
+                    left++; // Sum pathalana left pointer ah munnadi nagarthuvom
+                } else {
+                    right--; // Sum athigama irundha right pointer ah pinnaadi nagarthuvom
+                }
+            }
+        }
+    }
+    
+    return res;
+}
