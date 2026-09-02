@@ -1,0 +1,29 @@
+#include <stdbool.h>
+#include <string.h>
+
+bool isAnagram(char* s, char* t) {
+    int count[26] = {0};
+
+    // Step 1: Count characters in string s
+    int i = 0;
+    while (s[i] != '\0') {
+        count[s[i] - 'a']++;
+        i++;
+    }
+
+    // Step 2: Subtract characters in string t
+    int j = 0;
+    while (t[j] != '\0') {
+        count[t[j] - 'a']--;
+        j++;
+    }
+
+    // Step 3: Check if all character frequencies are balanced back to 0
+    for (int k = 0; k < 26; k++) {
+        if (count[k] != 0) {
+            return false;
+        }
+    }
+
+    return true;
+}
