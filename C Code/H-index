@@ -1,0 +1,34 @@
+#include <stdlib.h>
+
+int hIndex(int* citations, int citationsSize) {
+    int n = citationsSize;
+    
+    // Step 1: Create a bucket array of size n + 1
+    // buckets[i] will store the number of papers with exactly 'i' citations.
+    // buckets[n] will store all papers with 'n' or more citations.
+    int* buckets = (int*)calloc(n + 1, sizeof(int));
+    
+    // Step 2: Populate the buckets
+    for (int i = 0; i < n; i++) {
+        if (citations[i] >= n) {
+            buckets[n]++;
+        } else {
+            buckets[citations[i]]++;
+        }
+    }
+    
+    // Step 3: Scan from right to left to find the h-index
+    int totalPapers = 0;
+    for (int h = n; h >= 0; h--) {
+        totalPapers += buckets[h];
+        
+        // If the total number of papers found so far is >= h, we found our H-Index
+        if (totalPapers >= h) {
+            free(buckets);
+            return h;
+        }
+    }
+    
+    free(buckets);
+    return 0;
+}
