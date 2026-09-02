@@ -1,0 +1,35 @@
+#include <stdlib.h>
+#include <stdbool.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* intersection(int* nums1, int nums1Size, int* nums2, int nums2Size, int* returnSize) {
+    // FIX: Explicitly size the boolean array to handle indexes from 0 to 1000
+    bool present[1001] = {false};
+    
+    // Max possible size of the intersection is the size of the smaller array
+    int minSize = (nums1Size < nums2Size) ? nums1Size : nums2Size;
+    int* result = (int*)malloc(minSize * sizeof(int));
+    *returnSize = 0;
+    
+    // Step 1: Mark all numbers that exist in nums1
+    for (int i = 0; i < nums1Size; i++) {
+        present[nums1[i]] = true;
+    }
+    
+    // Step 2: Check nums2 elements against our tracking array
+    for (int i = 0; i < nums2Size; i++) {
+        int current_val = nums2[i];
+        
+        // If it exists in nums1, it's part of the intersection
+        if (present[current_val]) {
+            result[(*returnSize)++] = current_val;
+            
+            // Mark as false so we don't pick up duplicates of this number from nums2
+            present[current_val] = false;
+        }
+    }
+    
+    return result;
+}
