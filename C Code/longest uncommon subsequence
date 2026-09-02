@@ -1,0 +1,51 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+
+// Custom comparison function to sort strings by length in descending order
+int compareStrings(const void* a, const void* b) {
+    return strlen(*(const char**)b) - strlen(*(const char**)a);
+}
+
+// Helper function to check if string 's1' is a subsequence of string 's2'
+bool isSubsequence(const char* s1, const char* s2) {
+    int i = 0, j = 0;
+    while (s1[i] != '\0' && s2[j] != '\0') {
+        if (s1[i] == s2[j]) {
+            i++;
+        }
+        j++;
+    }
+    return s1[i] == '\0'; // True if we matched all characters of s1
+}
+
+int findLUSlength(char** strs, int strsSize) {
+    // Step 1: Sort strings by length in descending order
+    qsort(strs, strsSize, sizeof(char*), compareStrings);
+
+    // Step 2: Check each string to see if it is a subsequence of any other string
+    for (int i = 0; i < strsSize; i++) {
+        bool isUncommon = true;
+        
+        for (int j = 0; j < strsSize; j++) {
+            // Do not check a string against itself
+            if (i == j) continue;
+            
+            // Optimization: Since the list is sorted by length descending, 
+            // if strs[j] is shorter than strs[i], strs[i] cannot be a subsequence of it.
+            if (strlen(strs[j]) < strlen(strs[i])) break;
+
+            if (isSubsequence(strs[i], strs[j])) {
+                isUncommon = false;
+                break; // Failed the test, stop checking further for strs[i]
+            }
+        }
+        
+        // If it isn't a subsequence of any other string, it's our longest uncommon subsequence!
+        if (isUncommon) {
+            return strlen(strs[i]);
+        }
+    }
+
+    return -1;
+}
