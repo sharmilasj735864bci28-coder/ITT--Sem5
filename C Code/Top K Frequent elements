@@ -1,0 +1,68 @@
+#include <stdlib.h>
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* topKFrequent(int* nums, int numsSize, int k, int* returnSize) {
+    // Range of inputs is -10000 to 10000. Total size = 20001
+    int offset = 10000;
+    int freqMap[20001] = {0};
+
+    // Step 1: Populate the frequency map
+    for (int i = 0; i < numsSize; i++) {
+        freqMap[nums[i] + offset]++;
+    }
+
+    // Step 2: Set up buckets. 
+    // Max possible frequency of any element is numsSize.
+    // bucketSizes tracks how many unique elements share a specific frequency index.
+    int* bucketSizes = (int*)calloc(numsSize + 1, sizeof(int));
+    for (int i = 0; i < 20001; i++) {
+        if (freqMap[i] > 0) {
+            bucketSizes[freqMap[i]]++;
+        }
+    }
+
+    // Allocate an array of integer arrays for our buckets
+    int** buckets = (int**)malloc((numsSize + 1) * sizeof(int*));
+    for (int i = 0; i <= numsSize; i++) {
+        if (bucketSizes[i] > 0) {
+            buckets[i] = (int*)malloc(bucketSizes[i] * sizeof(int));
+        } else {
+            buckets[i] = NULL;
+        }
+    }
+
+    // Reset bucket count indices to use as insertion pointers
+    int* bucketPointers = (int*)calloc(numsSize + 1, sizeof(int));
+    for (int i = 0; i < 20001; i++) {
+        int f = freqMap[i];
+        if (f > 0) {
+            int originalValue = i - offset;
+            buckets[f][bucketPointers[f]++] = originalValue;
+        }
+    }
+
+    // Step 3: Collect top k elements by collecting from highest frequency buckets downwards
+    int* result = (int*)malloc(k * sizeof(int));
+    int resIdx = 0;
+
+    for (int f = numsSize; f >= 0 && resIdx < k; f--) {
+        if (bucketSizes[f] > 0) {
+            for (int i = 0; i < bucketSizes[f] && resIdx < k; i++) {
+                result[resIdx++] = buckets[f][i];
+            }
+        }
+    }
+
+    // Free dynamically allocated intermediate structures
+    for (int i = 0; i <= numsSize; i++) {
+        if (buckets[i]) free(buckets[i]);
+    }
+    free(buckets);
+    free(bucketSizes);
+    free(bucketPointers);
+
+    *returnSize = k;
+    return result;
+}
