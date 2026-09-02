@@ -1,0 +1,27 @@
+#include <stdlib.h>
+#include <math.h>
+
+// Custom comparison function for qsort to prevent overflow errors
+int compare(const void* a, const void* b) {
+    int val1 = *(const int*)a;
+    int val2 = *(const int*)b;
+    if (val1 < val2) return -1;
+    if (val1 > val2) return 1;
+    return 0;
+}
+
+int minMoves2(int* nums, int numsSize) {
+    // Step 1: Sort the array to easily extract the median
+    qsort(nums, numsSize, sizeof(int), compare);
+    
+    // Step 2: Identify the median value
+    int median = nums[numsSize / 2];
+    int totalMoves = 0;
+    
+    // Step 3: Calculate total sum of absolute differences
+    for (int i = 0; i < numsSize; i++) {
+        totalMoves += abs(nums[i] - median);
+    }
+    
+    return totalMoves;
+}
