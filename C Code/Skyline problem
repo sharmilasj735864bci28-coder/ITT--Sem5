@@ -1,0 +1,129 @@
+#include <stdlib.h>
+
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+// Helper function to append a point to the skyline while handling merges
+void appendPoint(int*** res, int* size, int** colSizes, int x, int y) {
+    // If the new point has the same height as the previous point, skip it
+    if (*size > 0 && (*res)[*size - 1][1] == y) {
+        return;
+    }
+    // If the new point has the same x-coordinate, update the height to the max
+    if (*size > 0 && (*res)[*size - 1][0] == x) {
+        (*res)[*size - 1][1] = y;
+        return;
+    }
+    
+    // Allocate space for the new point coordinate pair
+    (*res)[*size] = (int*)malloc(2 * sizeof(int));
+    (*res)[*size][0] = x;
+    (*res)[*size][1] = y;
+    (*colSizes)[*size] = 2;
+    (*size)++;
+}
+
+// Merges two independent sorted skylines together
+int** mergeSkylines(int** l1, int l1Size, int** l2, int l2Size, int* returnSize, int** returnColumnSizes) {
+    int** res = (int**)malloc((l1Size + l2Size) * sizeof(int*));
+    *returnColumnSizes = (int*)malloc((l1Size + l2Size) * sizeof(int));
+    int size = 0;
+
+    int i = 0, j = 0;
+    int h1 = 0, h2 = 0;
+
+    while (i < l1Size && j < l2Size) {
+        int x, y;
+        if (l1[i][0] < l2[j][0]) {
+            x = l1[i][0];
+            h1 = l1[i][1];
+            y = MAX(h1, h2);
+            i++;
+        } else if (l1[i][0] > l2[j][0]) {
+            x = l2[j][0];
+            h2 = l2[j][1];
+            y = MAX(h1, h2);
+            j++;
+        } else {
+            x = l1[i][0];
+            h1 = l1[i][1];
+            h2 = l2[j][1];
+            y = MAX(h1, h2);
+            i++;
+            j++;
+        }
+        appendPoint(&res, &size, returnColumnSizes, x, y);
+    }
+
+    // Append any leftover points from skyline 1
+    while (i < l1Size) {
+        appendPoint(&res, &size, returnColumnSizes, l1[i][0], l1[i][1]);
+        i++;
+    }
+
+    // Append any leftover points from skyline 2
+    while (j < l2Size) {
+        appendPoint(&res, &size, returnColumnSizes, l2[j][0], l2[j][1]);
+        j++;
+    }
+
+    *returnSize = size;
+    return res;
+}
+
+// Recursive divide and conquer worker
+int** divideAndConquer(int** buildings, int start, int end, int* returnSize, int** returnColumnSizes) {
+    if (start > end) {
+        *returnSize = 0;
+        return NULL;
+    }
+    
+    // Base Case: A single building forms a simple two-point skyline
+    if (start == end) {
+        int** res = (int**)malloc(2 * sizeof(int*));
+        *returnColumnSizes = (int*)malloc(2 * sizeof(int));
+        
+        res[0] = (int*)malloc(2 * sizeof(int));
+        res[0][0] = buildings[start][0];
+        res[0][1] = buildings[start][2];
+        (*returnColumnSizes)[0] = 2;
+        
+        res[1] = (int*)malloc(2 * sizeof(int));
+        res[1][0] = buildings[start][1];
+        res[1][1] = 0;
+        (*returnColumnSizes)[1] = 2;
+        
+        *returnSize = 2;
+        return res;
+    }
+
+    int mid = start + (end - start) / 2;
+    int l1Size, l2Size;
+    int* l1ColSizes;
+    int* l2ColSizes;
+
+    int** l1 = divideAndConquer(buildings, start, mid, &l1Size, &l1ColSizes);
+    int** l2 = divideAndConquer(buildings, mid + 1, end, &l2Size, &l2ColSizes);
+
+    int** merged = mergeSkylines(l1, l1Size, l2, l2Size, returnSize, returnColumnSizes);
+
+    // Free intermediate allocations
+    for (int k = 0; k < l1Size; k++) free(l1[k]);
+    if (l1) free(l1);
+    free(l1ColSizes);
+
+    for (int k = 0; k < l2Size; k++) free(l2[k]);
+    if (l2) free(l2);
+    free(l2ColSizes);
+
+    return merged;
+}
+
+// Main API entry point required by LeetCode
+int** getSkyline(int** buildings, int buildingsSize, int* buildingsColSize, int* returnSize, int** returnColumnSizes) {
+    if (buildingsSize == 0) {
+        *returnSize = 0;
+        *returnColumnSizes = NULL;
+        return NULL;
+    }
+    return divideAndConquer(buildings, 0, buildingsSize - 1, returnSize, returnColumnSizes);
+}
