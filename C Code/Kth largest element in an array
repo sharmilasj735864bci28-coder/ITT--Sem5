@@ -1,0 +1,26 @@
+#include <stdlib.h>
+
+int findKthLargest(int* nums, int numsSize, int k) {
+    // The problem states values range between -10000 and 10000.
+    // Total numbers possible = 10000 - (-10000) + 1 = 20001
+    int offset = 10000;
+    int count[20001] = {0};
+
+    // Step 1: Record frequencies of each number
+    for (int i = 0; i < numsSize; i++) {
+        count[nums[i] + offset]++;
+    }
+
+    // Step 2: Iterate backwards from the maximum value down to the minimum
+    int runningCount = 0;
+    for (int i = 20000; i >= 0; i--) {
+        runningCount += count[i];
+        
+        // If we have passed or hit the k-th target element
+        if (runningCount >= k) {
+            return i - offset;
+        }
+    }
+
+    return -1;
+}
