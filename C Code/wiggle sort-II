@@ -1,0 +1,40 @@
+#include <stdlib.h>
+#include <string.h>
+
+void wiggleSort(int* nums, int numsSize) {
+    // Step 1: Compute frequencies using Counting Sort since elements <= 5000
+    int counts[5001] = {0};
+    for (int i = 0; i < numsSize; i++) {
+        counts[nums[i]]++;
+    }
+
+    // Allocate temporary workspace to hold the re-ordered elements
+    int* temp = (int*)malloc(numsSize * sizeof(int));
+    
+    // Step 2: Distribute elements from largest to smallest.
+    // To handle duplicate elements matching the median without overlaps:
+    // Put larger elements into odd indices first, then smaller elements into even indices.
+    int current_val = 5000;
+    
+    // Fill odd indices (1, 3, 5...) with the largest available elements
+    for (int i = 1; i < numsSize; i += 2) {
+        while (counts[current_val] == 0) {
+            current_val--;
+        }
+        temp[i] = current_val;
+        counts[current_val]--;
+    }
+    
+    // Fill even indices (0, 2, 4...) with the remaining elements (smaller values)
+    for (int i = 0; i < numsSize; i += 2) {
+        while (counts[current_val] == 0) {
+            current_val--;
+        }
+        temp[i] = current_val;
+        counts[current_val]--;
+    }
+
+    // Step 3: Copy our sorted workspace back into the original array
+    memcpy(nums, temp, numsSize * sizeof(int));
+    free(temp);
+}
