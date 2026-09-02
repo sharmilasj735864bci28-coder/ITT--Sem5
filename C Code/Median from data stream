@@ -1,0 +1,137 @@
+#include <stdlib.h>
+#include <stdbool.h>
+
+// Max Heap Structure & Helpers
+typedef struct {
+    int* data;
+    int size;
+    int capacity;
+} MaxHeap;
+
+void maxHeapPush(MaxHeap* heap, int val) {
+    if (heap->size == heap->capacity) {
+        heap->capacity *= 2;
+        heap->data = (int*)realloc(heap->data, heap->capacity * sizeof(int));
+    }
+    int i = heap->size++;
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (heap->data[p] >= val) break;
+        heap->data[i] = heap->data[p];
+        i = p;
+    }
+    heap->data[i] = val;
+}
+
+int maxHeapPop(MaxHeap* heap) {
+    int res = heap->data[0];
+    int val = heap->data[--heap->size];
+    int i = 0;
+    while (i * 2 + 1 < heap->size) {
+        int left = i * 2 + 1;
+        int right = left + 1;
+        int target = left;
+        if (right < heap->size && heap->data[right] > heap->data[left]) {
+            target = right;
+        }
+        if (val >= heap->data[target]) break;
+        heap->data[i] = heap->data[target];
+        i = target;
+    }
+    heap->data[i] = val;
+    return res;
+}
+
+// Min Heap Structure & Helpers
+typedef struct {
+    int* data;
+    int size;
+    int capacity;
+} MinHeap;
+
+void minHeapPush(MinHeap* heap, int val) {
+    if (heap->size == heap->capacity) {
+        heap->capacity *= 2;
+        heap->data = (int*)realloc(heap->data, heap->capacity * sizeof(int));
+    }
+    int i = heap->size++;
+    while (i > 0) {
+        int p = (i - 1) / 2;
+        if (heap->data[p] <= val) break;
+        heap->data[i] = heap->data[p];
+        i = p;
+    }
+    heap->data[i] = val;
+}
+
+int minHeapPop(MinHeap* heap) {
+    int res = heap->data[0];
+    int val = heap->data[--heap->size];
+    int i = 0;
+    while (i * 2 + 1 < heap->size) {
+        int left = i * 2 + 1;
+        int right = left + 1;
+        int target = left;
+        if (right < heap->size && heap->data[right] < heap->data[left]) {
+            target = right;
+        }
+        if (val <= heap->data[target]) break;
+        heap->data[i] = heap->data[target];
+        i = target;
+    }
+    heap->data[i] = val;
+    return res;
+}
+
+// Median Finder Container Struct
+typedef struct {
+    MaxHeap max_left;
+    MinHeap min_right;
+} MedianFinder;
+
+MedianFinder* medianFinderCreate() {
+    MedianFinder* obj = (MedianFinder*)malloc(sizeof(MedianFinder));
+    
+    obj->max_left.capacity = 1000;
+    obj->max_left.size = 0;
+    obj->max_left.data = (int*)malloc(1000 * sizeof(int));
+    
+    obj->min_right.capacity = 1000;
+    obj->min_right.size = 0;
+    obj->min_right.data = (int*)malloc(1000 * sizeof(int));
+    
+    return obj;
+}
+
+void medianFinderAddNum(MedianFinder* obj, int num) {
+    // Step 1: Insert into the correct half
+    if (obj->max_left.size == 0 || num <= obj->max_left.data[0]) {
+        maxHeapPush(&obj->max_left, num);
+    } else {
+        minHeapPush(&obj->min_right, num);
+    }
+    
+    // Step 2: Rebalance heaps to maintain sizing boundaries
+    if (obj->max_left.size > obj->min_right.size + 1) {
+        minHeapPush(&obj->min_right, maxHeapPop(&obj->max_left));
+    } else if (obj->min_right.size > obj->max_left.size) {
+        maxHeapPush(&obj->max_left, minHeapPop(&obj->min_right));
+    }
+}
+
+double medianFinderFindMedian(MedianFinder* obj) {
+    // If total size is odd, the max_left top element is our exact median
+    if (obj->max_left.size > obj->min_right.size) {
+        return (double)obj->max_left.data[0];
+    }
+    // If total size is even, average the two middle boundaries
+    return ((double)obj->max_left.data[0] + (double)obj->min_right.data[0]) / 2.0;
+}
+
+void medianFinderFree(MedianFinder* obj) {
+    if (obj) {
+        free(obj->max_left.data);
+        free(obj->min_right.data);
+        free(obj);
+    }
+}
