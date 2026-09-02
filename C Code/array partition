@@ -1,0 +1,24 @@
+#include <stdlib.h>
+
+// Custom comparison function for qsort
+int compare(const void* a, const void* b) {
+    int val1 = *(const int*)a;
+    int val2 = *(const int*)b;
+    if (val1 < val2) return -1;
+    if (val1 > val2) return 1;
+    return 0;
+}
+
+int arrayPairSum(int* nums, int numsSize) {
+    // Step 1: Sort the array in ascending order
+    qsort(nums, numsSize, sizeof(int), compare);
+
+    int maximizedSum = 0;
+
+    // Step 2: Accumulate elements at even indices (0, 2, 4, ... up to numsSize - 2)
+    for (int i = 0; i < numsSize; i += 2) {
+        maximizedSum += nums[i];
+    }
+
+    return maximizedSum;
+}
