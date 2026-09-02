@@ -1,0 +1,128 @@
+#include <stdbool.h>
+#include <stdlib.h>
+#include <math.h>
+
+// Safely computes the bucket index while handling negative integer divisions
+long getBucketId(long val, long width) {
+    return val < 0 ? (val + 1) / width - 1 : val / width;
+}
+
+// Node structure for chained hash map buckets
+typedef struct Node {
+    long bucketId;
+    long value;
+    struct Node* next;
+} Node;
+
+// Helper to search a specific bucketId within our chained hash map array
+Node* findBucket(Node** map, int mapSize, long bucketId) {
+    int hashIdx = ((bucketId % mapSize) + mapSize) % mapSize;
+    Node* curr = map[hashIdx];
+    while (curr != NULL) {
+        if (curr->bucketId == bucketId) {
+            return curr;
+        }
+        curr = curr->next;
+    }
+    return NULL;
+}
+
+// Helper to insert a bucket entry
+void insertBucket(Node** map, int mapSize, long bucketId, long val) {
+    int hashIdx = ((bucketId % mapSize) + mapSize) % mapSize;
+    Node* newNode = (Node*)malloc(sizeof(Node));
+    newNode->bucketId = bucketId;
+    newNode->value = val;
+    newNode->next = map[hashIdx];
+    map[hashIdx] = newNode;
+}
+
+// Helper to safely delete an exact entry out of our map configuration
+void deleteBucket(Node** map, int mapSize, long bucketId) {
+    int hashIdx = ((bucketId % mapSize) + mapSize) % mapSize;
+    Node* curr = map[hashIdx];
+    Node* prev = NULL;
+    
+    while (curr != NULL) {
+        if (curr->bucketId == bucketId) {
+            if (prev == NULL) {
+                map[hashIdx] = curr->next;
+            } else {
+                prev->next = curr->next;
+            }
+            free(curr);
+            return;
+        }
+        prev = curr;
+        curr = curr->next;
+    }
+}
+
+bool containsNearbyAlmostDuplicate(int* nums, int numsSize, int indexDiff, int valueDiff) {
+    if (numsSize < 2 || indexDiff <= 0 || valueDiff < 0) {
+        return false;
+    }
+
+    long width = (long)valueDiff + 1;
+    int mapSize = indexDiff + 1;
+    
+    // Allocate pointer array initializing chain nodes to NULL
+    Node** map = (Node**)calloc(mapSize, sizeof(Node*));
+
+    for (int i = 0; i < numsSize; i++) {
+        long val = nums[i];
+        long bucketId = getBucketId(val, width);
+
+        // Case 1: Exact matching bucket found
+        if (findBucket(map, mapSize, bucketId) != NULL) {
+            goto success;
+        }
+
+        // Case 2: Check immediate neighbor bucket left
+        Node* left = findBucket(map, mapSize, bucketId - 1);
+        if (left != NULL && labs(val - left->value) <= valueDiff) {
+            goto success;
+        }
+
+        // Case 3: Check immediate neighbor bucket right
+        Node* right = findBucket(map, mapSize, bucketId + 1);
+        if (right != NULL && labs(val - right->value) <= valueDiff) {
+            goto success;
+        }
+
+        // Insert current element configuration
+        insertBucket(map, mapSize, bucketId, val);
+
+        // Sliding Window Clean Up: Remove elements outside indexDiff range
+        if (i >= indexDiff) {
+            long lastVal = nums[i - indexDiff];
+            long lastBucketId = getBucketId(lastVal, width);
+            deleteBucket(map, mapSize, lastBucketId);
+        }
+    }
+
+    // Clean up residual heap structures on mismatch return
+    for (int i = 0; i < mapSize; i++) {
+        Node* curr = map[i];
+        while (curr != NULL) {
+            Node* tmp = curr;
+            curr = curr->next;
+            free(tmp);
+        }
+    }
+    free(map);
+    return false;
+
+success:
+    // Clean up residual heap structures on match found return
+    for (int i = 0; i < mapSize; i++) {
+        Node* curr = map[i];
+        while (curr != NULL) {
+            Node* tmp = curr;
+            curr = curr->next;
+            free(tmp);
+        }
+    }
+    free(map);
+    return true;
+}
