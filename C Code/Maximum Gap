@@ -1,0 +1,64 @@
+#include <stdlib.h>
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
+
+int maximumGap(int* nums, int numsSize) {
+    // If the array contains less than 2 elements, return 0
+    if (numsSize < 2) {
+        return 0;
+    }
+
+    // Step 1: Find the global minimum and maximum values
+    int min_val = nums[0];
+    int max_val = nums[0];
+    for (int i = 1; i < numsSize; i++) {
+        if (nums[i] < min_val) min_val = nums[i];
+        if (nums[i] > max_val) max_val = nums[i];
+    }
+
+    // If all elements are identical, maximum gap is 0
+    if (min_val == max_val) {
+        return 0;
+    }
+
+    // Step 2: Calculate bucket size and count
+    int bucket_size = MAX(1, (max_val - min_val) / (numsSize - 1));
+    int num_buckets = (max_val - min_val) / bucket_size + 1;
+
+    // Step 3: Allocate and initialize array storage for buckets
+    int* bucket_min = (int*)malloc(num_buckets * sizeof(int));
+    int* bucket_max = (int*)malloc(num_buckets * sizeof(int));
+    int* bucket_has_element = (int*)calloc(num_buckets, sizeof(int));
+
+    for (int i = 0; i < num_buckets; i++) {
+        bucket_min[i] = 2e9;  // Treat as infinity initial proxy
+        bucket_max[i] = -1;   // Treat as negative infinity proxy
+    }
+
+    // Step 4: Populate bucket bounds using elements from array
+    for (int i = 0; i < numsSize; i++) {
+        int idx = (nums[i] - min_val) / bucket_size;
+        bucket_min[idx] = MIN(bucket_min[idx], nums[i]);
+        bucket_max[idx] = MAX(bucket_max[idx], nums[i]);
+        bucket_has_element[idx] = 1;
+    }
+
+    // Step 5: Compute consecutive gap differences across non-empty buckets
+    int max_gap = 0;
+    int previous_max = min_val;
+
+    for (int i = 0; i < num_buckets; i++) {
+        if (!bucket_has_element[i]) {
+            continue;
+        }
+        max_gap = MAX(max_gap, bucket_min[i] - previous_max);
+        previous_max = bucket_max[i];
+    }
+
+    // Free dynamically allocated spaces
+    free(bucket_min);
+    free(bucket_max);
+    free(bucket_has_element);
+
+    return max_gap;
+}  
