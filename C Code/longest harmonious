@@ -1,0 +1,26 @@
+#include <vector>
+#include <unordered_map>
+#include <algorithm>
+
+class Solution {
+public:
+    int findLHS(std::vector<int>& nums) {
+        std::unordered_map<int, int> counts;
+        
+        // Count frequencies of each number
+        for (int num : nums) {
+            counts[num]++;
+        }
+        
+        int max_length = 0;
+        
+        // Check for harmonious pairs
+        for (auto const& [num, count] : counts) {
+            if (counts.find(num + 1) != counts.end()) {
+                max_length = std::max(max_length, count + counts[num + 1]);
+            }
+        }
+        
+        return max_length;
+    }
+};
