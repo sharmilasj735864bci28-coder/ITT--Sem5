@@ -1,0 +1,70 @@
+#include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
+
+// Helper function to sort the array
+int compare(const void *a, const void *b) {
+    return (*(int*)a - *(int*)b);
+}
+
+// Backtracking helper function
+void backtrack(int* nums, int numsSize, int* current, int currentSize, bool* visited, 
+               int*** res, int* returnSize, int* capacity, int** returnColumnSizes) {
+    
+    // Base Case: If the current permutation is full, add it to results
+    if (currentSize == numsSize) {
+        if (*returnSize >= *capacity) {
+            *capacity *= 2;
+            *res = (int**)realloc(*res, (*capacity) * sizeof(int*));
+            *returnColumnSizes = (int*)realloc(*returnColumnSizes, (*capacity) * sizeof(int));
+        }
+        
+        (*res)[*returnSize] = (int*)malloc(numsSize * sizeof(int));
+        memcpy((*res)[*returnSize], current, numsSize * sizeof(int));
+        (*returnColumnSizes)[*returnSize] = numsSize;
+        (*returnSize)++;
+        return;
+    }
+    
+    for (int i = 0; i < numsSize; i++) {
+        // Skip if the element is already used in the current path
+        if (visited[i]) continue;
+        
+        // Skip duplicates: If the current number is the same as the previous one,
+        // and the previous one was not visited in this layer, skip it to avoid duplicate branches.
+        if (i > 0 && nums[i] == nums[i - 1] && !visited[i - 1]) continue;
+        
+        // Take element
+        visited[i] = true;
+        current[currentSize] = nums[i];
+        
+        // Recurse
+        backtrack(nums, numsSize, current, currentSize + 1, visited, res, returnSize, capacity, returnColumnSizes);
+        
+        // Backtrack (Undo choice)
+        visited[i] = false;
+    }
+}
+
+int** permuteUnique(int* nums, int numsSize, int* returnSize, int** returnColumnSizes) {
+    // 1. Sort the array to bring duplicates together
+    qsort(nums, numsSize, sizeof(int), compare);
+    
+    int capacity = 20;
+    int** res = (int**)malloc(capacity * sizeof(int*));
+    *returnColumnSizes = (int*)malloc(capacity * sizeof(int));
+    *returnSize = 0;
+    
+    // Arrays to track current permutation path and visited status
+    int* current = (int*)malloc(numsSize * sizeof(int));
+    bool* visited = (bool*)calloc(numsSize, sizeof(bool));
+    
+    // 2. Start backtracking from depth 0
+    backtrack(nums, numsSize, current, 0, visited, &res, returnSize, &capacity, returnColumnSizes);
+    
+    // Clean up temporary allocations
+    free(current);
+    free(visited);
+    
+    return res;
+}
