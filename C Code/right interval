@@ -1,0 +1,58 @@
+#include <stdlib.h>
+
+// Structure to preserve the original index configuration before sorting
+typedef struct {
+    int start;
+    int originalIndex;
+} IntervalInfo;
+
+// Custom comparison function for sorting start points in ascending order
+int compareIntervals(const void* a, const void* b) {
+    return (((IntervalInfo*)a)->start - ((IntervalInfo*)b)->start);
+}
+
+/**
+ * Note: The returned array must be malloced, assume caller calls free().
+ */
+int* findRightInterval(int** intervals, int intervalsSize, int* intervalsColSize, int* returnSize) {
+    *returnSize = intervalsSize;
+    int* result = (int*)malloc(intervalsSize * sizeof(int));
+    
+    // Step 1: Store start points with their original index mapping profiles
+    IntervalInfo* sortedList = (IntervalInfo*)malloc(intervalsSize * sizeof(IntervalInfo));
+    for (int i = 0; i < intervalsSize; i++) {
+        sortedList[i].start = intervals[i][0];
+        sortedList[i].originalIndex = i;
+    }
+    
+    // Step 2: Sort the mapping list based on start values ascending
+    qsort(sortedList, intervalsSize, sizeof(IntervalInfo), compareIntervals);
+    
+    // Step 3: Run Binary Search for each interval's end point
+    for (int i = 0; i < intervalsSize; i++) {
+        int targetEnd = intervals[i][1];
+        
+        int low = 0;
+        int high = intervalsSize - 1;
+        int rightIndexPlaceholder = -1;
+        
+        while (low <= high) {
+            int mid = low + (high - low) / 2;
+            
+            if (sortedList[mid].start >= targetEnd) {
+                // Potential match found, record it and try to find a smaller start point to the left
+                rightIndexPlaceholder = sortedList[mid].originalIndex;
+                high = mid - 1;
+            } else {
+                low = mid + 1; // Start point too small, look to the right
+            }
+        }
+        
+        result[i] = rightIndexPlaceholder;
+    }
+    
+    // Free intermediate workspace allocation structures
+    free(sortedList);
+    
+    return result;
+}
