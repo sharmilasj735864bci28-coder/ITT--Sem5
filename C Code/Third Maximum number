@@ -1,0 +1,40 @@
+#include <limits.h>
+
+int thirdMax(int* nums, int numsSize) {
+    // Use LLONG_MIN as a safe proxy flag to mean "not yet assigned"
+    long long first = LLONG_MIN;
+    long long second = LLONG_MIN;
+    long long third = LLONG_MIN;
+
+    for (int i = 0; i < numsSize; i++) {
+        long long current = nums[i];
+
+        // Skip the current value if it is already recorded as one of our distinct maximums
+        if (current == first || current == second || current == third) {
+            continue;
+        }
+
+        // Case 1: Current value is larger than the absolute maximum
+        if (first == LLONG_MIN || current > first) {
+            third = second;
+            second = first;
+            first = current;
+        }
+        // Case 2: Current value falls between the first and second maximums
+        else if (second == LLONG_MIN || current > second) {
+            third = second;
+            second = current;
+        }
+        // Case 3: Current value falls between the second and third maximums
+        else if (third == LLONG_MIN || current > third) {
+            third = current;
+        }
+    }
+
+    // If a valid distinct third maximum was never populated, return the absolute top maximum
+    if (third == LLONG_MIN) {
+        return (int)first;
+    }
+
+    return (int)third;
+}
