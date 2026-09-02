@@ -1,0 +1,31 @@
+#include <stdlib.h>
+
+// Custom comparison function for qsort to sort elements in ascending order
+int compare(const void* a, const void* b) {
+    int val1 = *(const int*)a;
+    int val2 = *(const int*)b;
+    if (val1 < val2) return -1;
+    if (val1 > val2) return 1;
+    return 0;
+}
+
+int findContentChildren(int* g, int gSize, int* s, int sSize) {
+    // Step 1: Sort both arrays in ascending order
+    qsort(g, gSize, sizeof(int), compare);
+    qsort(s, sSize, sizeof(int), compare);
+
+    int childPointer = 0;
+    int cookiePointer = 0;
+
+    // Step 2: Traverse both arrays with two pointers
+    while (childPointer < gSize && cookiePointer < sSize) {
+        // If the cookie size satisfies the child's greed factor
+        if (s[cookiePointer] >= g[childPointer]) {
+            childPointer++; // The child is content, move to the next child
+        }
+        cookiePointer++; // Move to the next cookie regardless of assignment
+    }
+
+    // The index of the childPointer represents the total number of content children
+    return childPointer;
+}
