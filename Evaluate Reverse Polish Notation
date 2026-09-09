@@ -1,0 +1,35 @@
+#include <vector>
+#include <string>
+#include <stack>
+
+using namespace std;
+
+class Solution {
+public:
+    int evalRPN(vector<string>& tokens) {
+        stack<int> st;
+        
+        for (const string& t : tokens) {
+            // Check if the current token is an operator
+            if (t == "+" || t == "-" || t == "*" || t == "/") {
+                // The first element popped is the right-hand operand
+                int num2 = st.top(); st.pop();
+                // The second element popped is the left-hand operand
+                int num1 = st.top(); st.pop();
+                
+                // Perform calculations based on the operator type
+                if (t == "+") st.push(num1 + num2);
+                else if (t == "-") st.push(num1 - num2);
+                else if (t == "*") st.push(num1 * num2);
+                else if (t == "/") st.push(num1 / num2); // Truncates toward zero by default in C++
+            } 
+            // If the token is a number, convert it to an integer and push it
+            else {
+                st.push(stoi(t));
+            }
+        }
+        
+        // The final element left in the stack is the calculated total evaluation
+        return st.top();
+    }
+};
