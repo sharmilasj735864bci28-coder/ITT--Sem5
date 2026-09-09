@@ -1,0 +1,35 @@
+#include <string>
+#include <stack>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    int longestValidParentheses(string s) {
+        stack<int> st;
+        st.push(-1); // Base element acting as a boundary reference
+        
+        int max_len = 0;
+        
+        for (int i = 0; i < s.length(); ++i) {
+            if (s[i] == '(') {
+                // Store the index of the opening bracket
+                st.push(i);
+            } else {
+                // Pop the top index to attempt a match
+                st.pop();
+                
+                if (st.empty()) {
+                    // No matching opening bracket; this index is the new boundary base
+                    st.push(i);
+                } else {
+                    // Valid match confirmed. Calculate substring length
+                    max_len = max(max_len, i - st.top());
+                }
+            }
+        }
+        
+        return max_len;
+    }
+};
