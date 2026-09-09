@@ -1,0 +1,43 @@
+#include <vector>
+#include <stack>
+
+using namespace std;
+
+class NestedIterator {
+private:
+    typedef vector<NestedInteger>::const_iterator vec_iter;
+    stack<pair<vec_iter, vec_iter>> st;
+
+public:
+    NestedIterator(vector<NestedInteger> &nestedList) {
+        st.push({nestedList.cbegin(), nestedList.cend()});
+    }
+    
+    int next() {
+        // Changed getInt() to getInteger() to match the LeetCode API
+        int val = st.top().first->getInteger();
+        st.top().first++; 
+        return val;
+    }
+    
+    bool hasNext() {
+        while (!st.empty()) {
+            auto& curr = st.top();
+            
+            if (curr.first == curr.second) {
+                st.pop();
+                continue;
+            }
+            
+            if (curr.first->isInteger()) {
+                return true;
+            }
+            
+            auto& inner_list = curr.first->getList();
+            curr.first++;
+            st.push({inner_list.cbegin(), inner_list.cend()});
+        }
+        
+        return false;
+    }
+};
