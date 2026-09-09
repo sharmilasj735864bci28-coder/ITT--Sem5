@@ -1,0 +1,52 @@
+#include <string>
+#include <vector>
+
+using namespace std;
+
+class Solution {
+public:
+    string reorganizeString(string s) {
+        vector<int> count(26, 0);
+        int max_freq = 0;
+        char max_char = ' ';
+        
+        // Step 1: Count character frequencies and identify the most frequent character
+        for (char c : s) {
+            count[c - 'a']++;
+            if (count[c - 'a'] > max_freq) {
+                max_freq = count[c - 'a'];
+                max_char = c;
+            }
+        }
+        
+        // Step 2: Check if it's impossible to reorganize
+        if (max_freq > (s.length() + 1) / 2) {
+            return "";
+        }
+        
+        string result = s; // Pre-allocate string space
+        int index = 0;
+        
+        // Step 3: Greedily place the most frequent character at even indices
+        while (count[max_char - 'a'] > 0) {
+            result[index] = max_char;
+            index += 2;
+            count[max_char - 'a']--;
+        }
+        
+        // Step 4: Place the rest of the characters in the remaining slots
+        for (int i = 0; i < 26; i++) {
+            char current_char = 'a' + i;
+            while (count[i] > 0) {
+                if (index >= s.length()) {
+                    index = 1; // Switch to odd slots once even positions are filled
+                }
+                result[index] = current_char;
+                index += 2;
+                count[i]--;
+            }
+        }
+        
+        return result;
+    }
+};
