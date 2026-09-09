@@ -1,0 +1,86 @@
+#include <vector>
+
+using namespace std;
+
+class MyCircularDeque {
+private:
+    vector<int> q;
+    int head;
+    int tail;
+    int capacity;
+    int current_size;
+
+public:
+    // Initializes the deque with a maximum size of k.
+    MyCircularDeque(int k) {
+        capacity = k;
+        q.resize(k);
+        head = 0;
+        tail = k - 1; // Positioned right before head logically
+        current_size = 0;
+    }
+    
+    // Adds an item at the front of Deque. Returns true if successful.
+    bool insertFront(int value) {
+        if (isFull()) return false;
+        
+        // Move head counter-clockwise
+        head = (head - 1 + capacity) % capacity;
+        q[head] = value;
+        current_size++;
+        return true;
+    }
+    
+    // Adds an item at the rear of Deque. Returns true if successful.
+    bool insertLast(int value) {
+        if (isFull()) return false;
+        
+        // Move tail clockwise
+        tail = (tail + 1) % capacity;
+        q[tail] = value;
+        current_size++;
+        return true;
+    }
+    
+    // Deletes an item from the front of Deque. Returns true if successful.
+    bool deleteFront() {
+        if (isEmpty()) return false;
+        
+        // Move head clockwise
+        head = (head + 1) % capacity;
+        current_size--;
+        return true;
+    }
+    
+    // Deletes an item from the rear of Deque. Returns true if successful.
+    bool deleteLast() {
+        if (isEmpty()) return false;
+        
+        // Move tail counter-clockwise
+        tail = (tail - 1 + capacity) % capacity;
+        current_size--;
+        return true;
+    }
+    
+    // Returns the front item from the Deque. Returns -1 if empty.
+    int getFront() {
+        if (isEmpty()) return -1;
+        return q[head];
+    }
+    
+    // Returns the last item from Deque. Returns -1 if empty.
+    int getRear() {
+        if (isEmpty()) return -1;
+        return q[tail];
+    }
+    
+    // Returns true if the deque is empty, or false otherwise.
+    bool isEmpty() {
+        return current_size == 0;
+    }
+    
+    // Returns true if the deque is full, or false otherwise.
+    bool isFull() {
+        return current_size == capacity;
+    }
+};
