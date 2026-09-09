@@ -1,0 +1,44 @@
+#include <string>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+private:
+    // Helper function that acts as our two-pointer expansion tool
+    int expandAroundCenter(const string& s, int left, int right) {
+        // Step 2 & 3: Loop condition and evaluation criteria
+        while (left >= 0 && right < s.length() && s[left] == s[right]) {
+            left--;  // Move left pointer outward
+            right++; // Move right pointer outward
+        }
+        // Step 5: Return the calculated length of this palindrome
+        return right - left - 1;
+    }
+
+public:
+    string longestPalindrome(string s) {
+        if (s.empty()) return "";
+        
+        int start = 0;
+        int max_len = 0;
+        
+        // Step 1: Initialize centers across the string
+        for (int i = 0; i < s.length(); ++i) {
+            // Check odd-length palindromes (e.g., center is 'b' in "aba")
+            int len1 = expandAroundCenter(s, i, i);
+            
+            // Check even-length palindromes (e.g., center is between 'b's in "abba")
+            int len2 = expandAroundCenter(s, i, i + 1);
+            
+            // Step 5: Update the longest palindrome tracker
+            int len = max(len1, len2);
+            if (len > max_len) {
+                max_len = len;
+                start = i - (len - 1) / 2; // Find the exact start index
+            }
+        }
+        
+        return s.substr(start, max_len);
+    }
+};
