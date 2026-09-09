@@ -1,0 +1,24 @@
+class Solution {
+public:
+    vector<int> findClosestElements(vector<int>& arr, int k, int x) {
+        int low = 0;
+        int high = arr.size() - k; // Maximum possible starting index
+        
+        // Binary search for the starting index of the k-closest elements window
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            
+            // Compare the distance of the elements just outside the boundaries
+            if (x - arr[mid] > arr[mid + k] - x) {
+                // arr[mid + k] is closer to x than arr[mid], shift window right
+                low = mid + 1;
+            } else {
+                // arr[mid] is closer or equidistant to x than arr[mid + k], shift window left
+                high = mid;
+            }
+        }
+        
+        // Return the k contiguous elements starting from index 'low'
+        return vector<int>(arr.begin() + low, arr.begin() + low + k);
+    }
+};
