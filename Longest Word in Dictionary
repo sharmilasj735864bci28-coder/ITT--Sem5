@@ -1,0 +1,36 @@
+#include <vector>
+#include <string>
+#include <unordered_set>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    string longestWord(vector<string>& words) {
+        // Step 1: Sort words by length ascending, and then lexicographically descending
+        sort(words.begin(), words.end(), [](const string& a, const string& b) {
+            if (a.length() == b.length()) {
+                return a > b; // Descending alphabetical order for same length
+            }
+            return a.length() < b.length(); // Ascending length order
+        });
+        
+        unordered_set<string> valid_words;
+        valid_words.insert(""); // Base case: an empty prefix is always valid
+        
+        string longest = "";
+        
+        // Step 2: Iterate and check if the prefix exists in our valid set
+        for (const string& w : words) {
+            string prefix = w.substr(0, w.length() - 1);
+            
+            if (valid_words.count(prefix)) {
+                valid_words.insert(w);
+                longest = w; // Overwrite because sorting order guarantees optimal selection
+            }
+        }
+        
+        return longest;
+    }
+};
