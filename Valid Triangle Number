@@ -1,0 +1,29 @@
+class Solution {
+public:
+    int triangleNumber(vector<int>& nums) {
+        int count = 0;
+        int n = nums.size();
+        
+        // Sort the array to use the two-pointer technique
+        sort(nums.begin(), nums.end());
+        
+        // Fix the largest side 'k' from right to left
+        for (int k = n - 1; k >= 2; --k) {
+            int i = 0;      // Left pointer (smallest side)
+            int j = k - 1;  // Right pointer (middle side)
+            
+            while (i < j) {
+                if (nums[i] + nums[j] > nums[k]) {
+                    // If nums[i] + nums[j] > nums[k], then all elements 
+                    // between i and j combined with j will form a valid triangle.
+                    count += (j - i);
+                    j--; 
+                } else {
+                    i++; 
+                }
+            }
+        }
+        
+        return count;
+    }
+};
