@@ -1,0 +1,41 @@
+#include <string>
+#include <vector>
+#include <sstream>
+
+using namespace std;
+
+class Solution {
+public:
+    string simplifyPath(string path) {
+        vector<string> st;
+        stringstream ss(path);
+        string token;
+        
+        // Step 1: Split the path into directory components by '/'
+        while (getline(ss, token, '/')) {
+            // Step 2: Skip empty strings and current directory tokens '.'
+            if (token == "" || token == ".") {
+                continue;
+            }
+            // Move up one level if '..' is encountered
+            if (token == "..") {
+                if (!st.empty()) {
+                    st.pop_back();
+                }
+            } 
+            // Treat everything else as a valid directory or file name
+            else {
+                st.push_back(token);
+            }
+        }
+        
+        // Step 3: Rebuild the path from the remaining directory components
+        string result = "";
+        for (const string& dir : st) {
+            result += "/" + dir;
+        }
+        
+        // Return root path if the string is empty, otherwise return canonical path
+        return result.empty() ? "/" : result;
+    }
+};
