@@ -1,0 +1,59 @@
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <climits>
+
+using namespace std;
+
+class Solution {
+public:
+    vector<int> smallestRange(vector<vector<int>>& nums) {
+        // Element format: {value, list_index, element_index}
+        // Custom comparator to make it a min-heap based on the value
+        auto comp = [](const vector<int>& a, const vector<int>& b) {
+            return a[0] > b[0];
+        };
+        priority_queue<vector<int>, vector<vector<int>>, decltype(comp)> min_heap(comp);
+        
+        int current_max = INT_MIN;
+        int k = nums.size();
+        
+        // Step 1: Insert the first element of each list into the min-heap
+        for (int i = 0; i < k; ++i) {
+            min_heap.push({nums[i][0], i, 0});
+            current_max = max(current_max, nums[i][0]);
+        }
+        
+        // Initialize range window boundaries
+        int range_start = min_heap.top()[0];
+        int range_end = current_max;
+        
+        // Step 2: Extract minimum and slide the window
+        while (min_heap.size() == k) {
+            auto curr = min_heap.top();
+            min_heap.pop();
+            
+            int current_min = curr[0];
+            int list_idx = curr[1];
+            int elem_idx = curr[2];
+            
+            // Update the answer if the current range window is smaller
+            if (current_max - current_min < range_end - range_start) {
+                range_start = current_min;
+                range_end = current_max;
+            }
+            
+            // If the current list has a next element, move its pointer forward
+            if (elem_idx + 1 < nums[list_idx].size()) {
+                int next_val = nums[list_idx][elem_idx + 1];
+                min_heap.push({next_val, list_idx, elem_idx + 1});
+                current_max = max(current_max, next_val);
+            } else {
+                // One of the lists has run out of elements, no more valid windows can be formed
+                break;
+            }
+        }
+        
+        return {range_start, range_end};
+    }
+};
