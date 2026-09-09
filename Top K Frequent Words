@@ -1,0 +1,40 @@
+class Solution {
+public:
+    vector<string> topKFrequent(vector<string>& words, int k) {
+        // Step 1: Count frequency of each word
+        unordered_map<string, int> freq_map;
+        for (const string& word : words) {
+            freq_map[word]++;
+        }
+        
+        // Step 2: Define a custom comparator for a Min-Heap
+        auto comp = [](const pair<string, int>& a, const pair<string, int>& b) {
+            if (a.second == b.second) {
+                // If frequencies match, prioritize lexicographically larger strings to the top
+                return a.first < b.first;
+            }
+            // Prioritize smaller frequency to the top
+            return a.second > b.second;
+        };
+        
+        // Min-heap to keep track of the top k elements
+        priority_queue<pair<string, int>, vector<pair<string, int>>, decltype(comp)> min_heap(comp);
+        
+        // Step 3: Maintain a heap of maximum size k
+        for (const auto& entry : freq_map) {
+            min_heap.push(entry);
+            if (min_heap.size() > k) {
+                min_heap.pop();
+            }
+        }
+        
+        // Step 4: Extract elements from the heap into the result vector (right to left)
+        vector<string> result(k);
+        for (int i = k - 1; i >= 0; --i) {
+            result[i] = min_heap.top().first;
+            min_heap.pop();
+        }
+        
+        return result;
+    }
+};
