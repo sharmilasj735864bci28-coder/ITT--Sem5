@@ -1,0 +1,30 @@
+class Solution {
+public:
+    vector<int> findErrorNums(vector<int>& nums) {
+        int duplicate = -1;
+        int missing = -1;
+        
+        // Step 1: Find the duplicate using negative marking
+        for (int i = 0; i < nums.size(); ++i) {
+            int val = abs(nums[i]);
+            
+            // If the element at index val - 1 is already negative, val is the duplicate
+            if (nums[val - 1] < 0) {
+                duplicate = val;
+            } else {
+                nums[val - 1] *= -1; // Mark as visited
+            }
+        }
+        
+        // Step 2: Find the missing number
+        for (int i = 0; i < nums.size(); ++i) {
+            // The index that remains positive indicates the missing number (index + 1)
+            if (nums[i] > 0) {
+                missing = i + 1;
+                break;
+            }
+        }
+        
+        return {duplicate, missing};
+    }
+};
