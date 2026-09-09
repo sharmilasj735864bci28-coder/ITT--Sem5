@@ -1,0 +1,49 @@
+#include <vector>
+#include <queue>
+#include <algorithm>
+#include <cfloat>
+
+using namespace std;
+
+class Solution {
+public:
+    double mincostToHireWorkers(vector<int>& quality, vector<int>& wage, int k) {
+        int n = quality.size();
+        // Vector to store pair of {ratio, quality}
+        vector<pair<double, int>> workers(n);
+        
+        for (int i = 0; i < n; ++i) {
+            workers[i] = {(double)wage[i] / quality[i], quality[i]};
+        }
+        
+        // Step 1: Sort workers by their wage-to-quality ratio in ascending order
+        sort(workers.begin(), workers.end());
+        
+        // Max-heap to maintain the smallest qualities among chosen workers
+        priority_queue<int> max_heap;
+        int sum_quality = 0;
+        double min_cost = DBL_MAX;
+        
+        // Step 2: Iterate through sorted workers
+        for (const auto& worker : workers) {
+            double ratio = worker.first;
+            int q = worker.second;
+            
+            sum_quality += q;
+            max_heap.push(q);
+            
+            // If we have more than k workers, evict the one with highest quality
+            if (max_heap.size() > k) {
+                sum_quality -= max_heap.top();
+                max_heap.pop();
+            }
+            
+            // If we have exactly k workers, evaluate total payout cost
+            if (max_heap.size() == k) {
+                min_cost = min(min_cost, sum_quality * ratio);
+            }
+        }
+        
+        return min_cost;
+    }
+};
