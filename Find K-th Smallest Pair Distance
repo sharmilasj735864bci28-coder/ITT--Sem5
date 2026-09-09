@@ -1,0 +1,43 @@
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    int smallestDistancePair(vector<int>& nums, int k) {
+        // Step 1: Sort the array to use two-pointer technique
+        sort(nums.begin(), nums.end());
+        
+        int n = nums.size();
+        int low = 0;
+        int high = nums.back() - nums.front(); // Max possible distance
+        
+        // Step 2: Binary search on the pair distance value
+        while (low < high) {
+            int mid = low + (high - low) / 2;
+            
+            // Count how many pairs have a distance <= mid
+            int count = 0;
+            int i = 0; // Left pointer
+            
+            for (int j = 0; j < n; ++j) {
+                // Shrink window from left if distance exceeds mid
+                while (nums[j] - nums[i] > mid) {
+                    i++;
+                }
+                // All pairs between i and j ending at j have a distance <= mid
+                count += (j - i);
+            }
+            
+            // Adjust binary search boundaries based on pair counts
+            if (count >= k) {
+                high = mid; // Lower bound could be smaller or equal to mid
+            } else {
+                low = mid + 1; // mid is too small, target is in upper half
+            }
+        }
+        
+        return low;
+    }
+};
