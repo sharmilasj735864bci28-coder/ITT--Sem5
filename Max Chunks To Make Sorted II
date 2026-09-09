@@ -1,0 +1,22 @@
+class Solution {
+public:
+    int maxChunksToSorted(vector<int>& arr) {
+        vector<int> st; // Acts as a monotonic stack storing chunk maximums
+        
+        for (int val : arr) {
+            if (st.empty() || val >= st.back()) {
+                st.push_back(val);
+            } else {
+                int curMax = st.back();
+                st.pop_back();
+                // Pop all chunks whose maximum is greater than the current value
+                while (!st.empty() && st.back() > val) {
+                    st.pop_back();
+                }
+                // Push back the original maximum because it still rules the merged chunk
+                st.push_back(curMax);
+            }
+        }
+        return st.size();
+    }
+};
