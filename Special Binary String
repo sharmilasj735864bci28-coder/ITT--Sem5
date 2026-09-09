@@ -1,0 +1,39 @@
+#include <string>
+#include <vector>
+#include <algorithm>
+
+using namespace std;
+
+class Solution {
+public:
+    string makeLargestSpecial(string s) {
+        int count = 0;
+        int i = 0;
+        vector<string> sub_blocks;
+        
+        // Step 1: Parse the string into independent special binary sub-blocks
+        for (int j = 0; j < s.length(); ++j) {
+            if (s[j] == '1') count++;
+            else count--;
+            
+            if (count == 0) {
+                // Inside s[i...j], the structure is guaranteed to be: '1' + internal_content + '0'
+                // Recursively process the internal content to maximize it
+                string internal_max = makeLargestSpecial(s.substr(i + 1, j - i - 1));
+                sub_blocks.push_back("1" + internal_max + "0");
+                i = j + 1; // Move pointer to start of next block
+            }
+        }
+        
+        // Step 2: Sort the sub-blocks in descending lexicographical order
+        sort(sub_blocks.begin(), sub_blocks.end(), greater<string>());
+        
+        // Step 3: Concatenate sorted components back into a single string
+        string result = "";
+        for (const string& block : sub_blocks) {
+            result += block;
+        }
+        
+        return result;
+    }
+};
