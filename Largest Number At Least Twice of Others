@@ -1,0 +1,25 @@
+class Solution {
+public:
+    int dominantIndex(vector<int>& nums) {
+        int max1 = -1; // Tracks the largest element
+        int max2 = -1; // Tracks the second largest element
+        int max1_index = -1;
+        
+        for (int i = 0; i < nums.size(); ++i) {
+            if (nums[i] > max1) {
+                max2 = max1; // The previous largest becomes the second largest
+                max1 = nums[i];
+                max1_index = i;
+            } else if (nums[i] > max2) {
+                max2 = nums[i]; // Update the second largest element
+            }
+        }
+        
+        // Check if the largest element is at least twice the second largest
+        if (max1 >= 2 * max2) {
+            return max1_index;
+        }
+        
+        return -1;
+    }
+};
