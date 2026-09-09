@@ -1,0 +1,40 @@
+#include <string>
+#include <queue>
+
+using namespace std;
+
+class Solution {
+public:
+    string predictPartyVictory(string senate) {
+        queue<int> radiant;
+        queue<int> dire;
+        int n = senate.length();
+        
+        // Step 1: Populate queues with initial indices of senators
+        for (int i = 0; i < n; ++i) {
+            if (senate[i] == 'R') {
+                radiant.push(i);
+            } else {
+                dire.push(i);
+            }
+        }
+        
+        // Step 2: Simulate the round-based procedure
+        while (!radiant.empty() && !dire.empty()) {
+            int r_idx = radiant.front(); radiant.pop();
+            int d_idx = dire.front(); dire.pop();
+            
+            // The senator with the smaller index moves first and bans the opponent
+            if (r_idx < d_idx) {
+                // Radiant bans Dire. Radiant joins the back for the next round.
+                radiant.push(r_idx + n);
+            } else {
+                // Dire bans Radiant. Dire joins the back for the next round.
+                dire.push(d_idx + n);
+            }
+        }
+        
+        // Step 3: Announce the winner
+        return radiant.empty() ? "Dire" : "Radiant";
+    }
+};
