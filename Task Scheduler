@@ -1,0 +1,30 @@
+class Solution {
+public:
+    int leastInterval(vector<char>& tasks, int n) {
+        // Step 1: Count the frequency of each task
+        vector<int> frequencies(26, 0);
+        for (char task : tasks) {
+            frequencies[task - 'A']++;
+        }
+        
+        // Step 2: Find the maximum frequency
+        int max_freq = 0;
+        for (int freq : frequencies) {
+            max_freq = max(max_freq, freq);
+        }
+        
+        // Step 3: Count how many tasks have this maximum frequency
+        int max_freq_count = 0;
+        for (int freq : frequencies) {
+            if (freq == max_freq) {
+                max_freq_count++;
+            }
+        }
+        
+        // Step 4: Calculate the minimum slots required by the formula
+        int min_slots = (max_freq - 1) * (n + 1) + max_freq_count;
+        
+        // Return the larger value between the structure size and total tasks
+        return max((int)tasks.size(), min_slots);
+    }
+};
