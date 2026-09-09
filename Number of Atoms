@@ -1,0 +1,77 @@
+#include <string>
+#include <vector>
+#include <map>
+#include <cctype>
+
+using namespace std;
+
+class Solution {
+public:
+    string countOfAtoms(string formula) {
+        // Stack to maintain atom counts at different nested levels
+        vector<map<string, int>> stack;
+        stack.push_back(map<string, int>()); // Base level map
+        
+        int n = formula.length();
+        int i = 0;
+        
+        while (i < n) {
+            if (formula[i] == '(') {
+                // Enter a new nested scope
+                stack.push_back(map<string, int>());
+                i++;
+            } 
+            else if (formula[i] == ')') {
+                // Exit current nested scope
+                i++;
+                // Parse the multiplier after the closing parenthesis
+                int val = 0;
+                while (i < n && isdigit(formula[i])) {
+                    val = val * 10 + (formula[i] - '0');
+                    i++;
+                }
+                if (val == 0) val = 1; // Default multiplier is 1
+                
+                // Pop the top map and multiply its values
+                map<string, int> top_map = stack.back();
+                stack.pop_back();
+                
+                // Merge counts into the parent scope map
+                for (auto const& [atom, count] : top_map) {
+                    stack.back()[atom] += count * val;
+                }
+            } 
+            else {
+                // Parse Atom Name (Starts with uppercase, followed by lowercase letters)
+                int start = i;
+                i++; // Move past uppercase letter
+                while (i < n && islower(formula[i])) {
+                    i++;
+                }
+                string atom = formula.substr(start, i - start);
+                
+                // Parse Atom Count digits
+                int val = 0;
+                while (i < n && isdigit(formula[i])) {
+                    val = val * 10 + (formula[i] - '0');
+                    i++;
+                }
+                if (val == 0) val = 1; // Default count is 1
+                
+                // Add to the map at the current nesting level
+                stack.back()[atom] += val;
+            }
+        }
+        
+        // Step 3: Construct the final string using sorted keys from the base map
+        string result = "";
+        for (auto const& [atom, count] : stack.back()) {
+            result += atom;
+            if (count > 1) {
+                result += to_string(count);
+            }
+        }
+        
+        return result;
+    }
+};
