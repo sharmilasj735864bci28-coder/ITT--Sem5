@@ -1,0 +1,50 @@
+#include <vector>
+#include <unordered_map>
+#include <unordered_set>
+#include <cstdlib>
+
+using namespace std;
+
+class Solution {
+private:
+    unordered_map<int, int> mapping;
+    int valid_size;
+
+public:
+    Solution(int n, vector<int>& blacklist) {
+        int B = blacklist.size();
+        valid_size = n - B;
+        
+        // Put all blacklisted elements into a set for O(1) lookups
+        unordered_set<int> black_set(blacklist.begin(), blacklist.end());
+        
+        // We will map blacklisted elements in [0, valid_size - 1] 
+        // to valid elements in [valid_size, n - 1]
+        int last_valid = n - 1;
+        
+        for (int b : blacklist) {
+            // We only care about blacklisted elements in the lower range
+            if (b < valid_size) {
+                // Find the next available valid number from the top end
+                while (black_set.count(last_valid)) {
+                    last_valid--;
+                }
+                // Map the blacklisted element to the valid top element
+                mapping[b] = last_valid;
+                last_valid--;
+            }
+        }
+    }
+    
+    int pick() {
+        // Pick a random index within the valid size boundaries
+        int r = rand() % valid_size;
+        
+        // If it lands on a blacklisted element, reroute to its valid replacement
+        if (mapping.count(r)) {
+            return mapping[r];
+        }
+        
+        return r;
+    }
+};
