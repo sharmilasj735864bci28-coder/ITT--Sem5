@@ -1,0 +1,72 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <stdbool.h>
+bool isSubsequenceRepeatK(const char* s, const char* seq, int k) {
+    int seq_len = strlen(seq);
+    if (seq_len == 0) return true;
+    
+    int s_ptr = 0;
+    int s_len = strlen(s);
+    for (int rep = 0; rep < k; rep++) {
+        for (int i = 0; i < seq_len; i++) {
+            while (s_ptr < s_len && s[s_ptr] != seq[i]) {
+                s_ptr++;
+            }
+            if (s_ptr >= s_len) {
+                return false; 
+            }
+            s_ptr++; 
+        }
+    }
+    return true;
+}
+
+char* longestSubsequenceRepeatedK(char* s, int k) {
+    int counts[26] = {0};
+    int s_len = strlen(s);
+    for (int i = 0; i < s_len; i++) {
+        counts[s[i] - 'a']++;
+    }
+    char valid_chars[26];
+    int valid_count = 0;
+    for (int i = 0; i < 26; i++) {
+        if (counts[i] >= k) {
+            valid_chars[valid_count++] = (char)('a' + i);
+        }
+    }
+    char** queue = (char**)malloc(100000 * sizeof(char*));
+    int head = 0, tail = 0;
+    queue[tail] = (char*)malloc(1 * sizeof(char));
+    queue[tail][0] = '\0';
+    tail++;
+    
+    char* best_ans = (char*)malloc(9 * sizeof(char));
+    best_ans[0] = '\0';
+    
+    while (head < tail) {
+        char* curr = queue[head++];
+        int curr_len = strlen(curr);
+        for (int i = 0; i < valid_count; i++) {
+            char* next_str = (char*)malloc((curr_len + 2) * sizeof(char));
+            strcpy(next_str, curr);
+            next_str[curr_len] = valid_chars[i];
+            next_str[curr_len + 1] = '\0';
+            
+            if (isSubsequenceRepeatK(s, next_str, k)) {
+                int next_len = curr_len + 1;
+                int best_len = strlen(best_ans);
+                if (next_len > best_len || (next_len == best_len && strcmp(next_str, best_ans) > 0)) {
+                    strcpy(best_ans, next_str);
+                }
+                queue[tail++] = next_str;
+            } else {
+                free(next_str);
+            }
+        }
+        free(curr);
+    }
+    free(queue);
+    
+    return best_ans;
+}
