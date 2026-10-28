@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <string.h>
+#include <stdbool.h>
+#define MAX(a, b) ((a) > (b) ? (a) : (b))
+int lengthLongestPath(char * input) {
+    int path_len[200] = {0}; 
+    int max_len = 0;
+    
+    char *line = strtok(input, "\n");
+    
+    while (line != NULL) {
+        int depth = 0;
+                while (line[depth] == '\t') {
+            depth++;
+        }
+        char *name = line + depth;
+        int name_len = strlen(name);
+        bool is_file = false;
+        for (int i = 0; i < name_len; i++) {
+            if (name[i] == '.') {
+                is_file = true;
+                break;
+            }
+        }
+        
+        if (is_file) {
+            int current_file_path_len = path_len[depth] + name_len;
+            max_len = MAX(max_len, current_file_path_len);
+        } else {
+            path_len[depth + 1] = path_len[depth] + name_len + 1;
+        }
+        
+        line = strtok(NULL, "\n");
+    }
+     return max_len;
+}
