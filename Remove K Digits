@@ -1,0 +1,36 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+char* removeKdigits(char* num, int k) {
+    int len = strlen(num);     
+    if (k >= len) {
+        return "0";
+    }    
+    char* stack = (char*)malloc((len + 1) * sizeof(char));
+    int top = 0;    
+    for (int i = 0; i < len; i++) {    
+        while (k > 0 && top > 0 && stack[top - 1] > num[i]) {
+            top--;
+            k--;
+        }  
+        stack[top++] = num[i];
+    }       
+    while (k > 0 && top > 0) {
+        top--;
+        k--;
+    }    
+    int start = 0;
+    while (start < top && stack[start] == '0') {
+        start++;
+    }
+    if (start == top) {
+        free(stack);
+        return "0";
+    }  
+    int result_len = top - start;
+    char* result = (char*)malloc((result_len + 1) * sizeof(char));
+    strncpy(result, stack + start, result_len);
+    result[result_len] = '\0';    
+    free(stack);
+    return result;
+}
