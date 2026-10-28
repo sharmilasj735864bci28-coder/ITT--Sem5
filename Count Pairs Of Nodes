@@ -1,0 +1,84 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+typedef struct {
+    long long key; 
+    int count;
+} OverlapEdge;
+int compareLongLong(const void* a, const void* b) {
+    long long arg1 = *(const long long*)a;
+    long long arg2 = *(const long long*)b;
+    if (arg1 < arg2) return -1;
+    if (arg1 > arg2) return 1;
+    return 0;
+}
+int compareInt(const void* a, const void* b) {
+    return (*(const int*)a - *(const int*)b);
+}
+
+int* countPairs(int n, int** edges, int edgesSize, int* edgesColSize, int* queries, int queriesSize, int* returnSize) {
+    int* deg = (int*)calloc(n + 1, sizeof(int));
+    long long* encodedEdges = (long long*)malloc(edgesSize * sizeof(long long));
+    
+    for (int i = 0; i < edgesSize; i++) {
+        int u = edges[i][0];
+        int v = edges[i][1];
+        deg[u]++;
+        deg[v]++;
+        int min_node = u < v ? u : v;
+        int max_node = u > v ? u : v;
+        encodedEdges[i] = ((long long)min_node << 32) | max_node;
+    }
+    qsort(encodedEdges, edgesSize, sizeof(long long), compareLongLong);
+    
+    OverlapEdge* uniqueEdges = (OverlapEdge*)malloc(edgesSize * sizeof(OverlapEdge));
+    int uniqueEdgesCount = 0;
+    
+    for (int i = 0; i < edgesSize; i++) {
+        if (i > 0 && encodedEdges[i] == encodedEdges[i - 1]) {
+            uniqueEdges[uniqueEdgesCount - 1].count++;
+        } else {
+            uniqueEdges[uniqueEdgesCount].key = encodedEdges[i];
+            uniqueEdges[uniqueEdgesCount].count = 1;
+            uniqueEdgesCount++;
+        }
+    }
+    free(encodedEdges);
+    int* sorted_deg = (int*)malloc(n * sizeof(int));
+    memcpy(sorted_deg, deg + 1, n * sizeof(int));
+    qsort(sorted_deg, n, sizeof(int), compareInt);
+    int* answers = (int*)malloc(queriesSize * sizeof(int));
+    *returnSize = queriesSize;
+    
+    for (int q = 0; q < queriesSize; q++) {
+        int query = queries[q];
+        int ans = 0;
+        int left = 0;
+        int right = n - 1;
+        while (left < right) {
+            if (sorted_deg[left] + sorted_deg[right] > query) {
+                ans += (right - left);
+                right--;
+            } else {
+                left++;
+            }
+        }
+        for (int i = 0; i < uniqueEdgesCount; i++) {
+            long long key = uniqueEdges[i].key;
+            int u = key >> 32;
+            int v = key & 0xFFFFFFFF;
+            int shared = uniqueEdges[i].count;
+            
+            if (deg[u] + deg[v] > query && deg[u] + deg[v] - shared <= query) {
+                ans--;
+            }
+        }
+        
+        answers[q] = ans;
+    }
+    free(deg);
+    free(sorted_deg);
+    free(uniqueEdges);
+    
+    return answers;
+}
