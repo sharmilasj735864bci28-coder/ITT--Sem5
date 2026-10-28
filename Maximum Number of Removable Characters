@@ -1,0 +1,40 @@
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+bool isPossible(const char* s, const char* p, int* removable, int k, int s_len) {
+    bool* removed = (bool*)calloc(s_len, sizeof(bool));
+    for (int i = 0; i < k; i++) {
+        removed[removable[i]] = true;
+    }
+    
+    int p_ptr = 0;
+    int s_ptr = 0;
+    while (s[s_ptr] != '\0' && p[p_ptr] != '\0') {
+        if (!removed[s_ptr] && s[s_ptr] == p[p_ptr]) {
+            p_ptr++;
+        }
+        s_ptr++;
+    }
+    
+    free(removed);
+    return p[p_ptr] == '\0';
+}
+
+int maximumRemovals(char* s, char* p, int* removable, int removableSize) {
+    int s_len = strlen(s);
+    int low = 0;
+    int high = removableSize;
+    int ans = 0;
+    while (low <= high) {
+        int mid = low + (high - low) / 2;
+        
+        if (isPossible(s, p, removable, mid, s_len)) {
+            ans = mid;    
+            low = mid + 1; 
+        } else {
+            high = mid - 1; 
+        }
+    }
+    
+    return ans;
+}
