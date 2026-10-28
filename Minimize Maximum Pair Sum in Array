@@ -1,0 +1,22 @@
+#include <stdlib.h>
+int compare(const void* a, const void* b) {
+    return (*(int*)a - *(int*)b);
+}
+
+int minPairSum(int* nums, int numsSize) {
+    qsort(nums, numsSize, sizeof(int), compare);
+    
+    int maxPairSum = 0;
+    int left = 0;
+    int right = numsSize - 1;
+    while (left < right) {
+        int currentSum = nums[left] + nums[right];
+        if (currentSum > maxPairSum) {
+            maxPairSum = currentSum;
+        }
+        left++;
+        right--;
+    }
+    
+    return maxPairSum;
+}
