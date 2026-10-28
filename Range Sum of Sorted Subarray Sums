@@ -1,0 +1,27 @@
+#include <stdlib.h>
+int compare(const void* a, const void* b) {
+    int val1 = *(const int*)a;
+    int val2 = *(const int*)b;
+    return (val1 > val2) - (val1 < val2);
+}
+
+int rangeSum(int* nums, int numsSize, int n, int left, int right) {
+    int totalSubarrays = n * (n + 1) / 2;
+    int* subarraySums = (int*)malloc(totalSubarrays * sizeof(int));
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+        int currentSum = 0;
+        for (int j = i; j < n; j++) {
+            currentSum += nums[j];
+            subarraySums[index++] = currentSum;
+        }
+    }
+    qsort(subarraySums, totalSubarrays, sizeof(int), compare);
+    long long totalSum = 0;
+    int MOD = 1e9 + 7;
+    for (int i = left - 1; i < right; i++) {
+        totalSum = (totalSum + subarraySums[i]) % MOD;
+    }
+    free(subarraySums);  
+    return (int)totalSum;
+}
