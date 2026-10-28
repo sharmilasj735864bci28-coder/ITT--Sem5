@@ -1,0 +1,37 @@
+#include <stdio.h>
+#include <stdlib.h>
+typedef struct {
+    long long key;
+    int count;
+} HashElement;
+long long countPairs(int* arr, int arrSize, long long target) {
+    long long pairs = 0;
+    int max_val = 100000;
+    int* freq = (int*)calloc(max_val + 1, sizeof(int));
+    
+    for (int i = 0; i < arrSize; i++) {
+        long long val = arr[i];
+        if (target % val == 0) {
+            long long complement = target / val;
+            if (complement <= max_val) {
+                pairs += freq[complement];
+            }
+        }
+        freq[val]++;
+    }
+    
+    free(freq);
+    return pairs;
+}
+int numTriplets(int* nums1, int nums1Size, int* nums2, int nums2Size) {
+    long long totalTriplets = 0;
+    for (int i = 0; i < nums1Size; i++) {
+        long long target = (long long)nums1[i] * nums1[i];
+        totalTriplets += countPairs(nums2, nums2Size, target);
+    }
+    for (int i = 0; i < nums2Size; i++) {
+        long long target = (long long)nums2[i] * nums2[i];
+        totalTriplets += countPairs(nums1, nums1Size, target);
+    }   
+    return (int)totalTriplets;
+}
