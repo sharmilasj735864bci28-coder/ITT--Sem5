@@ -1,0 +1,45 @@
+#include <stdbool.h>
+#include <string.h>
+#include <stdlib.h>
+int splitSentence(const char* sentence, char*** words) {
+    char* copy = strdup(sentence);
+    int count = 0;
+    char* token = strtok(copy, " ");
+    while (token) {
+        count++;
+        token = strtok(NULL, " ");
+    }
+    free(copy);
+    *words = (char**)malloc(count * sizeof(char*));
+    copy = strdup(sentence);
+    token = strtok(copy, " ");
+    int i = 0;
+    while (token) {
+        (*words)[i++] = strdup(token);
+        token = strtok(NULL, " ");
+    }
+    free(copy);
+    
+    return count;
+}
+bool areSentencesSimilar(char* sentence1, char* sentence2) {
+    char** words1 = NULL;
+    char** words2 = NULL; 
+    int n1 = splitSentence(sentence1, &words1);
+    int n2 = splitSentence(sentence2, &words2);  
+    int left = 0;
+    while (left < n1 && left < n2 && strcmp(words1[left], words2[left]) == 0) {
+        left++;
+    }
+    int right1 = n1 - 1;
+    int right2 = n2 - 1;
+    while (right1 >= left && right2 >= left && strcmp(words1[right1], words2[right2]) == 0) {
+        right1--;
+        right2--;
+    }
+    for (int i = 0; i < n1; i++) free(words1[i]);
+    for (int i = 0; i < n2; i++) free(words2[i]);
+    free(words1);
+    free(words2);
+    return left > right1 || left > right2;
+}
